@@ -1,4 +1,4 @@
-package fr.btsciel.liaisonSerie;
+package com.mtgprod;
 
 
 import jssc.*;

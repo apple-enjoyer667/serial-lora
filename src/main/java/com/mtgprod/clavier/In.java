@@ -4,7 +4,7 @@
  * TODO To change the template for this generated file go to
  * Window - Preferences - Java - Code Style - Code Templates
  */
-package clavier;
+package com.mtgprod.clavier;
 
 /**
  * @author MOULAI Philippe <br>
