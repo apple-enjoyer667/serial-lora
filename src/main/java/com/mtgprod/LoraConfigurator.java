@@ -33,11 +33,17 @@ public class LoraConfigurator extends LiaisonSerie {
     @Override
     public void serialEvent(SerialPortEvent event) {
         System.out.println("Retour de la commande lora:");
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        int taille = super.detecteSiReception();
+        System.out.println(taille);
+        //int trame_int = event.getEventValue();
 
-        var trame_int = event.getEventValue();
-
-        var trame_byte = new byte[trame_int];
-        trame_byte = this.lireTrame(trame_int);
+        byte[] trame_byte;
+        trame_byte = this.lireTrame(taille);
 
         System.out.println(new String(trame_byte));
     }
@@ -49,7 +55,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok after the system gets back from Sleep mode, or invalid_param if the length is not valid.
      */
     public void sysSleep(String length) {
-        var message = "sys sleep " + length + "\r\n";
+        String message = "sys sleep " + length + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -84,7 +90,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if the parameters (address and data) are valid, or invalid_param if the parameters (address and data) are not valid.
      */
     public void sysSetNvm(String address, String data) {
-        var message = "sys set nvm " + address + " " + data + "\r\n";
+        String message = "sys set nvm " + address + " " + data + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -95,7 +101,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if the parameters (<pinname>, <pinstate>) are valid, or invalid_param if the parameters (<pinname>, <pinstate>) are not valid
      */
     public void sysSetPindig(String pinName, String pinState) {
-        var message = "sys set pindig " + pinName + " " + pinState + "\r\n";
+        String message = "sys set pindig " + pinName + " " + pinState + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -106,7 +112,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if all the parameters are valid, or invalid_param if any of the parameters are not valid.
      */
     public void sysSetPinmode(String pinName, String pinMode) {
-        var message = "sys set pinmode " + pinName + " " + pinMode + "\r\n";
+        String message = "sys set pinmode " + pinName + " " + pinMode + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -124,7 +130,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return 00-FF (hexadecimal value from 00 to FF) if the address is valid, or invalid_param if the address is not valid.
      */
     public void sysGetNvm(String address) {
-        var message = "sys get nvm " + address + "\r\n";
+        String message = "sys get nvm " + address + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -150,7 +156,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return decimal number representing the state (either 0 or 1)
      */
     public void sysGetPindig(String pinName) {
-        var message = "sys get pindig " + pinName + "\r\n";
+        String message = "sys get pindig " + pinName + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -160,7 +166,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return decimal number representing the result of the conversion, from 0 to 1023, where 0 represents 0V and 1023 is VDD, the supply voltage of the module.
      */
     public void sysGetPinana(String pinName) {
-        var message = "sys get pinana " + pinName + "\r\n";
+        String message = "sys get pinana " + pinName + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -172,19 +178,19 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if band is valid, or invalid_param if band is not valid[cite: 465, 466].
      */
     public void macReset(String band) {
-        var message = "mac reset " + band + "\r\n";
+        String message = "mac reset " + band + "\r\n";
         super.ecrire(message.getBytes());
     }
 
     /**
      * 2.4.2 mac tx <type> <portno> <data>
-     * @param type string representing the uplink payload type, either cnf or uncnf (cnf - confirmed, uncnf - unconfirmed)[cite: 479, 480].
-     * @param portno decimal number representing the port number, from 1 to 223[cite: 481].
-     * @param data hexadecimal value. The length of <data> bytes capable of being transmitted are dependent upon the set data rate[cite: 481, 482].
-     * @return ok if parameters and configurations are valid and the packet was forwarded to the radio transceiver for transmission (followed by a second reply after transmission)[cite: 483, 484, 487].
+     * @param type string representing the uplink payload type, either cnf or uncnf (cnf - confirmed, uncnf - unconfirmed).
+     * @param portno decimal number representing the port number, from 1 to 223.
+     * @param data hexadecimal value. The length of <data> bytes capable of being transmitted are dependent upon the set data rate.
+     * @return ok if parameters and configurations are valid and the packet was forwarded to the radio transceiver for transmission (followed by a second reply after transmission).
      */
     public void macTx(String type, String portno, String data) {
-        var message = "mac tx " + type + " " + portno + " " + data + "\r\n";
+        String message = "mac tx " + type + " " + portno + " " + data + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -194,7 +200,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok - if parameters and configurations are valid and the join request packet was forwarded to the radio transceiver for transmission[cite: 540].
      */
     public void macJoin(String mode) {
-        var message = "mac join " + mode + "\r\n";
+        String message = "mac join " + mode + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -216,7 +222,7 @@ public class LoraConfigurator extends LiaisonSerie {
 
     /**
      * 2.4.6 mac pause
-     * @return 0-4294967295 (decimal number representing the number of milliseconds the mac can be paused)[cite: 602].
+     * @return 0-4294967295 (decimal number representing the number of milliseconds the mac can be paused)
      */
     public void macPause() {
         super.ecrire("mac pause\r\n".getBytes());
@@ -232,126 +238,126 @@ public class LoraConfigurator extends LiaisonSerie {
 
     /**
      * 2.4.8.1 mac set appkey <appKey>
-     * @param appKey 16-byte hexadecimal number representing the application key[cite: 628, 629].
-     * @return ok if key is valid, or invalid_param if key is not valid[cite: 630, 631].
+     * @param appKey 16-byte hexadecimal number representing the application key
+     * @return ok if key is valid, or invalid_param if key is not valid
      */
     public void macSetAppkey(String appKey) {
-        var message = "mac set appkey " + appKey + "\r\n";
+        String message = "mac set appkey " + appKey + "\r\n";
         super.ecrire(message.getBytes());
     }
 
     /**
      * 2.4.8.2 mac set appskey <appSessKey>
-     * @param appSessKey 16-byte hexadecimal number representing the application session key[cite: 640, 641].
-     * @return ok if key is valid, or invalid_param if key is not valid[cite: 643, 644].
+     * @param appSessKey 16-byte hexadecimal number representing the application session key
+     * @return ok if key is valid, or invalid_param if key is not valid
      */
     public void macSetAppskey(String appSessKey) {
-        var message = "mac set appskey " + appSessKey + "\r\n";
+        String message = "mac set appskey " + appSessKey + "\r\n";
         super.ecrire(message.getBytes());
     }
 
     /**
      * 2.4.8.3 mac set ar <state>
-     * @param state string value representing the state, either on or off[cite: 650, 651].
-     * @return ok if state is valid, or invalid_param if state is not valid[cite: 652, 653].
+     * @param state string value representing the state, either on or off
+     * @return ok if state is valid, or invalid_param if state is not valid
      */
     public void macSetAr(String state) {
-        var message = "mac set ar " + state + "\r\n";
+        String message = "mac set ar " + state + "\r\n";
         super.ecrire(message.getBytes());
     }
 
     /**
      * 2.4.8.4 mac set bat <level>
-     * @param level decimal number representing the level of the battery, from 0 to 255. '0' means external power, '1' means low level, 254 means high level, 255 means the end device was not able to measure the battery level[cite: 662, 663].
-     * @return ok if the battery level is valid, or invalid_param if the battery level is not valid[cite: 664, 665].
+     * @param level decimal number representing the level of the battery, from 0 to 255. '0' means external power, '1' means low level, 254 means high level, 255 means the end device was not able to measure the battery level
+     * @return ok if the battery level is valid, or invalid_param if the battery level is not valid
      */
     public void macSetBat(String level) {
-        var message = "mac set bat " + level + "\r\n";
+        String message = "mac set bat " + level + "\r\n";
         super.ecrire(message.getBytes());
     }
 
     /**
      * 2.4.8.5.1 mac set ch freq <channelID> <frequency>
-     * @param channelID decimal number representing the channel number, from 3 to 15[cite: 678, 679].
-     * @param frequency decimal number representing the frequency, from 863000000 to 870000000 or from 433050000 to 434790000, in Hz[cite: 679].
-     * @return ok if parameters are valid, or invalid_param if parameters are not valid[cite: 680, 681].
+     * @param channelID decimal number representing the channel number, from 3 to 15
+     * @param frequency decimal number representing the frequency, from 863000000 to 870000000 or from 433050000 to 434790000, in Hz
+     * @return ok if parameters are valid, or invalid_param if parameters are not valid
      */
     public void macSetChFreq(String channelID, String frequency) {
-        var message = "mac set ch freq " + channelID + " " + frequency + "\r\n";
+        String message = "mac set ch freq " + channelID + " " + frequency + "\r\n";
         super.ecrire(message.getBytes());
     }
 
     /**
      * 2.4.8.5.2 mac set ch dcycle <channelID> <dutyCycle>
-     * @param channelID decimal number representing the channel number, from 0 to 15[cite: 687, 688].
-     * @param dutyCycle decimal number representing the duty cycle, from 0 to 65535[cite: 688].
-     * @return ok if parameters are valid, or invalid_param if parameters are not valid[cite: 688, 689].
+     * @param channelID decimal number representing the channel number, from 0 to 15
+     * @param dutyCycle decimal number representing the duty cycle, from 0 to 65535
+     * @return ok if parameters are valid, or invalid_param if parameters are not valid
      */
     public void macSetChDcycle(String channelID, String dutyCycle) {
-        var message = "mac set ch dcycle " + channelID + " " + dutyCycle + "\r\n";
+        String message = "mac set ch dcycle " + channelID + " " + dutyCycle + "\r\n";
         super.ecrire(message.getBytes());
     }
 
     /**
      * 2.4.8.5.3 mac set ch drrange <channelID> <minRange> <maxRange>
-     * @param channelID decimal number representing the channel number, from 0 to 15[cite: 698, 699].
-     * @param minRange decimal number representing the minimum data rate, from 0 to 7[cite: 699].
-     * @param maxRange decimal number representing the maximum data rate, from 0 to 7[cite: 699].
-     * @return ok if parameters are valid, or invalid_param if parameters are not valid[cite: 699, 700].
+     * @param channelID decimal number representing the channel number, from 0 to 15
+     * @param minRange decimal number representing the minimum data rate, from 0 to 7
+     * @param maxRange decimal number representing the maximum data rate, from 0 to 7
+     * @return ok if parameters are valid, or invalid_param if parameters are not valid
      */
     public void macSetChDrrange(String channelID, String minRange, String maxRange) {
-        var message = "mac set ch drrange " + channelID + " " + minRange + " " + maxRange + "\r\n";
+        String message = "mac set ch drrange " + channelID + " " + minRange + " " + maxRange + "\r\n";
         super.ecrire(message.getBytes());
     }
 
     /**
      * 2.4.8.5.4 mac set ch status <channelID> <status>
-     * @param channelID decimal number representing the channel number, from 0 to 15[cite: 709, 710].
-     * @param status string value representing the state, either on or off[cite: 710, 711].
-     * @return ok if parameters are valid, or invalid_param if parameters are not valid[cite: 712, 713].
+     * @param channelID decimal number representing the channel number, from 0 to 15
+     * @param status string value representing the state, either on or off
+     * @return ok if parameters are valid, or invalid_param if parameters are not valid
      */
     public void macSetChStatus(String channelID, String status) {
-        var message = "mac set ch status " + channelID + " " + status + "\r\n";
+        String message = "mac set ch status " + channelID + " " + status + "\r\n";
         super.ecrire(message.getBytes());
     }
 
     /**
      * 2.4.8.6 mac set class <class>
-     * @param deviceClass A letter representing the LoRaWAN device class, either a or c[cite: 724, 725].
-     * @return ok if class is valid, or invalid_param if the class is not valid[cite: 725, 726].
+     * @param deviceClass A letter representing the LoRaWAN device class, either a or c
+     * @return ok if class is valid, or invalid_param if the class is not valid
      */
     public void macSetClass(String deviceClass) {
-        var message = "mac set class " + deviceClass + "\r\n";
+        String message = "mac set class " + deviceClass + "\r\n";
         super.ecrire(message.getBytes());
     }
 
     /**
      * 2.4.8.7 mac set devaddr <address>
-     * @param address 4-byte hexadecimal number representing the device address, from 00000000 - FFFFFFFF[cite: 734, 735, 736].
+     * @param address 4-byte hexadecimal number representing the device address, from 00000000 - FFFFFFFF
      * @return ok if address is valid, or invalid_param if address is not valid[cite: 737, 738].
      */
     public void macSetDevaddr(String address) {
-        var message = "mac set devaddr " + address + "\r\n";
+        String message = "mac set devaddr " + address + "\r\n";
         super.ecrire(message.getBytes());
     }
 
     /**
      * 2.4.8.8 mac set deveui <devEUI>
-     * @param devEUI 8-byte hexadecimal number representing the device EUI[cite: 744, 745].
-     * @return ok if address is valid, or invalid_param if address is not valid[cite: 746, 747].
+     * @param devEUI 8-byte hexadecimal number representing the device EUI
+     * @return ok if address is valid, or invalid_param if address is not valid
      */
     public void macSetDeveui(String devEUI) {
-        var message = "mac set deveui " + devEUI + "\r\n";
+        String message = "mac set deveui " + devEUI + "\r\n";
         super.ecrire(message.getBytes());
     }
 
     /**
      * 2.4.8.9 mac set dnctr <fCntDown>
-     * @param fCntDown decimal number representing the value of the downlink frame counter that will be used for the next downlink reception, from 0 to 4294967295[cite: 755, 756, 757].
-     * @return ok if parameter is valid, or invalid_param if parameter is not valid[cite: 758, 759].
+     * @param fCntDown decimal number representing the value of the downlink frame counter that will be used for the next downlink reception, from 0 to 4294967295
+     * @return ok if parameter is valid, or invalid_param if parameter is not valid
      */
     public void macSetDnctr(String fCntDown) {
-        var message = "mac set dnctr " + fCntDown + "\r\n";
+        String message = "mac set dnctr " + fCntDown + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -361,7 +367,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if data rate is valid, or invalid_param if data rate is not valid[cite: 767, 768].
      */
     public void macSetDr(String dataRate) {
-        var message = "mac set dr " + dataRate + "\r\n";
+        String message = "mac set dr " + dataRate + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -371,7 +377,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if the time interval is valid, or invalid_param if the time interval is not valid[cite: 778, 779].
      */
     public void macSetLinkchk(String linkCheck) {
-        var message = "mac set linkchk " + linkCheck + "\r\n";
+        String message = "mac set linkchk " + linkCheck + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -381,7 +387,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if state is valid, or invalid_param if the state is not valid[cite: 791, 792].
      */
     public void macSetMcast(String state) {
-        var message = "mac set mcast " + state + "\r\n";
+        String message = "mac set mcast " + state + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -391,7 +397,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if key is valid, or invalid_param if the key is not valid[cite: 800, 802].
      */
     public void macSetMcastappskey(String mcastApplicationSessionkey) {
-        var message = "mac set mcastappskey " + mcastApplicationSessionkey + "\r\n";
+        String message = "mac set mcastappskey " + mcastApplicationSessionkey + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -401,7 +407,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if address is valid, or invalid_param if the address is not valid[cite: 810, 811].
      */
     public void macSetMcastdevaddr(String mcastAddress) {
-        var message = "mac set mcastdevaddr " + mcastAddress + "\r\n";
+        String message = "mac set mcastdevaddr " + mcastAddress + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -411,7 +417,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if parameter is valid, or invalid_param if the parameter is not valid[cite: 822, 823].
      */
     public void macSetMcastdnctr(String fMcastCntDown) {
-        var message = "mac set mcastdnctr " + fMcastCntDown + "\r\n";
+        String message = "mac set mcastdnctr " + fMcastCntDown + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -421,7 +427,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if key is valid, or invalid_param if the key is not valid[cite: 830, 832].
      */
     public void macSetMcastnwkskey(String mcastNetworkSessionkey) {
-        var message = "mac set mcastnwkskey " + mcastNetworkSessionkey + "\r\n";
+        String message = "mac set mcastnwkskey " + mcastNetworkSessionkey + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -431,7 +437,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if key is valid, or invalid_param if key is not valid[cite: 839, 840].
      */
     public void macSetNwkskey(String nwkSessKey) {
-        var message = "mac set nwkskey " + nwkSessKey + "\r\n";
+        String message = "mac set nwkskey " + nwkSessKey + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -441,7 +447,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if power index is valid, or invalid_param if power index is not valid[cite: 851, 852].
      */
     public void macSetPwridx(String pwrIndex) {
-        var message = "mac set pwridx " + pwrIndex + "\r\n";
+        String message = "mac set pwridx " + pwrIndex + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -451,7 +457,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if <retx> is valid, or invalid_param if <retx> is not valid[cite: 860, 861].
      */
     public void macSetRetx(String reTxNb) {
-        var message = "mac set retx " + reTxNb + "\r\n";
+        String message = "mac set retx " + reTxNb + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -462,7 +468,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if parameters are valid, or invalid_param if parameters are not valid[cite: 869, 870].
      */
     public void macSetRx2(String dataRate, String frequency) {
-        var message = "mac set rx2 " + dataRate + " " + frequency + "\r\n";
+        String message = "mac set rx2 " + dataRate + " " + frequency + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -472,7 +478,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if <rxDelay> is valid, or invalid_param if <rxDelay> is not valid[cite: 882, 883].
      */
     public void macSetRxdelay1(String rxDelay) {
-        var message = "mac set rxdelay1 " + rxDelay + "\r\n";
+        String message = "mac set rxdelay1 " + rxDelay + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -482,7 +488,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if parameters are valid, or invalid_param if parameter is not valid[cite: 891, 892].
      */
     public void macSetSync(String synchWord) {
-        var message = "mac set sync " + synchWord + "\r\n";
+        String message = "mac set sync " + synchWord + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -492,7 +498,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if parameter is valid, or invalid_param if parameter is not valid[cite: 899, 900].
      */
     public void macSetUpctr(String fCntUp) {
-        var message = "mac set upctr " + fCntUp + "\r\n";
+        String message = "mac set upctr " + fCntUp + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -526,7 +532,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return decimal number representing the frequency of the channel, in Hz[cite: 950, 951].
      */
     public void macGetChFreq(String channelID) {
-        var message = "mac get ch freq " + channelID + "\r\n";
+        String message = "mac get ch freq " + channelID + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -536,7 +542,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return decimal number representing the duty cycle of the channel, from 0 to 65535[cite: 957, 958].
      */
     public void macGetChDcycle(String channelID) {
-        var message = "mac get ch dcycle " + channelID + "\r\n";
+        String message = "mac get ch dcycle " + channelID + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -546,7 +552,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return decimal number representing the minimum and maximum data rates of the channel[cite: 965, 966].
      */
     public void macGetChDrrange(String channelID) {
-        var message = "mac get ch drrange " + channelID + "\r\n";
+        String message = "mac get ch drrange " + channelID + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -556,7 +562,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return string representing the state of the channel, either on or off[cite: 973].
      */
     public void macGetChStatus(String channelID) {
-        var message = "mac get ch status " + channelID + "\r\n";
+        String message = "mac get ch status " + channelID + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -670,7 +676,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return decimal number representing the data rate and frequency configured for the second Receive window[cite: 1058, 1059].
      */
     public void macGetRx2(String freqBand) {
-        var message = "mac get rx2 " + freqBand + "\r\n";
+        String message = "mac get rx2 " + freqBand + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -739,7 +745,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if parameter is valid and the transceiver is configured in Receive mode, invalid_param if parameter is not valid, or busy if the transceiver is currently busy.
      */
     public void radioRx(String rxWindowSize) {
-        var message = "radio rx " + rxWindowSize + "\r\n";
+        String message = "radio rx " + rxWindowSize + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -749,7 +755,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if parameter is valid and the transceiver is configured in Transmit mode, invalid_param if parameter is not valid, or busy if the transceiver is currently busy.
      */
     public void radioTx(String data) {
-        var message = "radio tx " + data + "\r\n";
+        String message = "radio tx " + data + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -759,7 +765,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if state is valid, or invalid_param if state is not valid.
      */
     public void radioCw(String state) {
-        var message = "radio cw " + state + "\r\n";
+        String message = "radio cw " + state + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -777,7 +783,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if the automatic frequency correction is valid, or invalid_param if the automatic frequency correction is not valid.
      */
     public void radioSetAfcbw(String autoFreqBand) {
-        var message = "radio set afcbw " + autoFreqBand + "\r\n";
+        String message = "radio set afcbw " + autoFreqBand + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -787,7 +793,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if the bit rate value is valid, or invalid_param if the bit rate value is not valid.
      */
     public void radioSetBitrate(String fskBitRate) {
-        var message = "radio set bitrate " + fskBitRate + "\r\n";
+        String message = "radio set bitrate " + fskBitRate + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -797,7 +803,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if the data shaping is valid, or invalid_param if the data shaping is not valid.
      */
     public void radioSetBt(String gfBT) {
-        var message = "radio set bt " + gfBT + "\r\n";
+        String message = "radio set bt " + gfBT + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -807,7 +813,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if the bandwidth is valid, or invalid_param if the bandwidth is not valid.
      */
     public void radioSetBw(String bandWidth) {
-        var message = "radio set bw " + bandWidth + "\r\n";
+        String message = "radio set bw " + bandWidth + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -817,7 +823,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if the coding rate is valid, or invalid_param if the coding rate is not valid.
      */
     public void radioSetCr(String codingRate) {
-        var message = "radio set cr " + codingRate + "\r\n";
+        String message = "radio set cr " + codingRate + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -827,7 +833,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if the state is valid, or invalid_param if the state is not valid.
      */
     public void radioSetCrc(String crcHeader) {
-        var message = "radio set crc " + crcHeader + "\r\n";
+        String message = "radio set crc " + crcHeader + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -837,7 +843,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if the frequency deviation is valid, or invalid_param if frequency deviation is not valid.
      */
     public void radioSetFdev(String freqDev) {
-        var message = "radio set fdev " + freqDev + "\r\n";
+        String message = "radio set fdev " + freqDev + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -847,7 +853,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if the frequency is valid, or invalid_param if the frequency is not valid.
      */
     public void radioSetFreq(String frequency) {
-        var message = "radio set freq " + frequency + "\r\n";
+        String message = "radio set freq " + frequency + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -857,7 +863,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if the state is valid, or invalid_param if the state is not valid.
      */
     public void radioSetIqi(String iqInvert) {
-        var message = "radio set iqi " + iqInvert + "\r\n";
+        String message = "radio set iqi " + iqInvert + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -867,7 +873,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if the modulation is valid, or invalid_param if the modulation is not valid.
      */
     public void radioSetMod(String mode) {
-        var message = "radio set mod " + mode + "\r\n";
+        String message = "radio set mod " + mode + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -877,7 +883,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if the preamble length is valid, or invalid_param if the preamble length is not valid.
      */
     public void radioSetPrlen(String preamble) {
-        var message = "radio set prlen " + preamble + "\r\n";
+        String message = "radio set prlen " + preamble + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -887,7 +893,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if the output power is valid, or invalid_param if the output power is not valid.
      */
     public void radioSetPwr(String pwrOut) {
-        var message = "radio set pwr " + pwrOut + "\r\n";
+        String message = "radio set pwr " + pwrOut + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -897,7 +903,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if the signal bandwidth is valid, or invalid_param if signal bandwidth is not valid.
      */
     public void radioSetRxbw(String rxBandwidth) {
-        var message = "radio set rxbw " + rxBandwidth + "\r\n";
+        String message = "radio set rxbw " + rxBandwidth + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -907,7 +913,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if the spreading factor is valid, or invalid_param if the spreading factor is not valid.
      */
     public void radioSetSf(String spreadingFactor) {
-        var message = "radio set sf " + spreadingFactor + "\r\n";
+        String message = "radio set sf " + spreadingFactor + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -917,7 +923,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if the sync word is valid, or invalid_param if the sync word is not valid.
      */
     public void radioSetSync(String syncWord) {
-        var message = "radio set sync " + syncWord + "\r\n";
+        String message = "radio set sync " + syncWord + "\r\n";
         super.ecrire(message.getBytes());
     }
 
@@ -927,7 +933,7 @@ public class LoraConfigurator extends LiaisonSerie {
      * @return ok if the watchdog time-out is valid, or invalid_param if the watchdog time-out is not valid.
      */
     public void radioSetWdt(String watchDog) {
-        var message = "radio set wdt " + watchDog + "\r\n";
+        String message = "radio set wdt " + watchDog + "\r\n";
         super.ecrire(message.getBytes());
     }
 
