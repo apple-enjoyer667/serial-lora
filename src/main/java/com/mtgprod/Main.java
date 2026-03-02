@@ -2,19 +2,45 @@ package com.mtgprod;
 
 import jssc.SerialPortException;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Base64;
 
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 public class Main {
     public static void main(String[] args) throws InterruptedException {
+        /*BufferedReader br; String s;
+        Path loraConfig = Paths.get("lora-config.txt");
+        try {
+            br = Files.newBufferedReader(loraConfig, Charset.defaultCharset());
+
+        } catch (IOException e) {
+            System.out.println("Error reading lora-config.txt file");
+            throw new RuntimeException(e);
+        }*/
+
+
         LoraConfigurator lora = new LoraConfigurator();
 
         lora.startConnection();
 
-        //lora.sysGetVer();
+        // Dois être: 70B3D57050000003
+        lora.macGetAppeui();
+        Thread.sleep(1000);
+        // Dois être: 0004A30B0024038F (correspond a la JoinEUI)
+        lora.macGetDeveui();
+        Thread.sleep(1000);
+        lora.sysGetVer();
+        Thread.sleep(1000);
+        lora.macGetDr();
+        Thread.sleep(1000);
         //lora.getVdd();
         //lora.macGetDeveui();
         //Thread.sleep(1000);
@@ -24,24 +50,24 @@ public class Main {
         //lora.macSetDevaddr("006677");
         //lora.macTxText();
 
-        System.out.println("Setting appkey...");
-        lora.macSetAppkey("1BB24C63509C78D11F05C27104A522F5");
-        Thread.sleep(1000);
-        System.out.println("Setting powerIdx...");
-        lora.macSetPwridx("1");
-        Thread.sleep(1000);
-        lora.macSave();
+        //System.out.println("Setting appkey...");
+        //lora.macSetAppkey("1BB24C63509C78D11F05C27104A522F5");
+        //Thread.sleep(1000);
+        //System.out.println("Setting powerIdx...");
+        //lora.macSetPwridx("1");
+        //Thread.sleep(1000);
+        //lora.macSave();
         //Thread.sleep(1000);
         //lora.macSave();
         //lora.macSetAppkey("1BB24C63509C78D11F05C27104A522F5");
         //lora.macSave();
         //lora.macTx("uncnf", "1", toHexString("le payload mon cousin".getBytes()));
-        Thread.sleep(1000);
+        //Thread.sleep(1000);
         System.out.println("Connecting using OTAA...");
         lora.macJoin("otaa");
-        Thread.sleep(10000);
-        System.out.println("Sending 'Augusto Pascal' over radio...");
-        lora.macTx("uncnf", "1", toHexString("lucasaugusto".getBytes()));
+        Thread.sleep(30 * 1000);
+        //System.out.println("Sending 'Augusto Pascal' over radio...");
+        //lora.macTx("uncnf", "1", toHexString("lucasaugusto".getBytes()));
         //Thread.sleep(10000);
 
         final float[] SENSOR_DATA = {
@@ -68,7 +94,9 @@ public class Main {
         var lora_buffer_array = lora_buffer.array();
         var string_payload = toHexString(lora_buffer_array);
 
-        //lora.macTx("uncnf", "1", string_payload);
+        System.out.println(string_payload);
+
+        lora.macTx("uncnf", "1", string_payload);
     }
 
     public static String toHexString(byte[] bytes) {

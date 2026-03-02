@@ -39,7 +39,7 @@ public class LoraConfigurator extends LiaisonSerie {
             throw new RuntimeException(e);
         }
         int taille = super.detecteSiReception();
-        System.out.println(taille);
+        //System.out.println(taille);
         //int trame_int = event.getEventValue();
 
         byte[] trame_byte;
@@ -191,6 +191,7 @@ public class LoraConfigurator extends LiaisonSerie {
      */
     public void macTx(String type, String portno, String data) {
         String message = "mac tx " + type + " " + portno + " " + data + "\r\n";
+        System.out.println(message);
         super.ecrire(message.getBytes());
     }
 
