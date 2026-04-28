@@ -15,7 +15,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter")
     implementation("io.github.java-native:jssc:2.9.4")
     implementation("org.slf4j:slf4j-api:1.7.32")
-    implementation("org.slf4j:slf4j-simple:1.7.32")
+    implementation("org.slf4j:slf4j-simple:2.0.7")
     implementation("io.github.java-native:jssc:2.10.2")
     // Source: https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc
     implementation("org.xerial:sqlite-jdbc:3.51.2.0")

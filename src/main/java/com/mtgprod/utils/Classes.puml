@@ -1,0 +1,114 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam monochrome true
+skinparam shadowing false
+
+' Interfaces externes
+interface SerialPortEventListener <<jssc>> {
+    + serialEvent(event: SerialPortEvent)
+}
+
+interface AutoCloseable <<java.lang>> {
+    + close()
+}
+
+' Classes du projet
+class Main {
+    + {static} main(args: String[])
+    + {static} toHexString(bytes: byte[]): String
+}
+
+class LiaisonSerie {
+    + serialPort: SerialPort
+    + LiaisonSerie()
+    + listerLesPorts(): ArrayList<String>
+    + serialEvent(event: SerialPortEvent)
+    + initCom(portDeTravail: String)
+    + configurerParametres(vitesse: int, donnees: int, parite: int, stop: int)
+    + fermerPort()
+    + detecteSiReception(): int
+    + lire(): byte
+    + lireTrame(longeur: int): byte[]
+    + ecrire(b: byte[])
+    + ecrire(b: byte)
+}
+
+class LoraConfigurator {
+    + LoraConfigurator()
+    + startConnection()
+    + sysGetVer()
+    + sysGetHweui()
+    + macTx(type: String, port: int, data: String)
+    + macJoin(mode: String)
+    + macSave()
+    + macSetAppkey(appKey: String)
+    + macSetAppskey(appSessKey: String)
+    + macSetDevaddr(address: String)
+    + macSetDeveui(devEUI: String)
+    + macSetLinkchk(linkCheck: String)
+    + macGetAppeui()
+}
+
+class ErrorLogger {
+    - {static} DEFAULT_RETENTION_DAYS: long
+    - {static} DEFAULT_DB_PATH: String
+    - connection: Connection
+    - retentionDays: long
+    + ErrorLogger()
+    + ErrorLogger(dbPath: String)
+    + ErrorLogger(retentionDays: int)
+    + ErrorLogger(dbPath: String, retentionDays: long)
+    + log(e: Exception)
+    + log(errorMessage: String)
+    + queryAll(): ResultSet
+    + queryLastHours(hours: int): ResultSet
+    + close()
+    - initTable()
+    - insertEntry(timestampMs: long, errorMessage: String)
+    - purgeOldEntries()
+    - {static} stackTraceToString(e: Exception): String
+}
+
+class EM111ModBusClient {
+    - master: ModbusMaster
+    - portName: String
+    - slaveId: int
+    - {static} BAUD_RATE: int = 9600
+    - {static} DATA_BITS: int = 8
+    - {static} STOP_BITS: int = 1
+    - {static} PARITY: SerialPort.Parity
+    - {static} REG_VOLTAGE: int = 0x00
+    - {static} REG_CURRENT: int = 0x02
+    - {static} REG_ACTIVE_POWER: int = 0x04
+    - {static} REG_TOTAL_KWH: int = 0x10
+    - {static} REG_FREQUENCY: int = 0x0F
+    - {static} REG_REACT_POWER: int = 0x08
+    - {static} REG_POWER_FACTOR: int = 0x0E
+    + voltage: float
+    + currentRMS: float
+    + activePower: float
+    + totalKwh: float
+    + frequency: float
+    + reactivePower: float
+    + apparentPower: float
+    + powerFactor: float
+    + quality: String
+    + valeurs: float[]
+    + EM111ModBusClient(portName: String, slaveId: int)
+    + connect()
+    + disconnect()
+    + readData(): float[]
+    - readSwapped32BitValue(startAddress: int, divisor: float, label: String): float
+    - readSwapped16BitValue(startAddress: int, divisor: float, label: String): float
+}
+
+' Relations
+LiaisonSerie ..|> SerialPortEventListener
+LoraConfigurator -up-|> LiaisonSerie
+ErrorLogger ..|> AutoCloseable
+
+Main ..> LoraConfigurator : "utilise"
+Main ..> ErrorLogger : "utilise"
+Main ..> EM111ModBusClient : "utilise"
+
+@enduml
